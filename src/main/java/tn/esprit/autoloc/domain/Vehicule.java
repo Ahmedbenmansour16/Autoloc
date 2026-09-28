@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -20,4 +23,7 @@ public class Vehicule {
     @Enumerated(EnumType.STRING)
     StatutVehicule statut;
 
+    //les relation
+    @ManyToMany(fetch = FetchType.EAGER)
+    List<Equipement> equipements = new ArrayList<>();
 }

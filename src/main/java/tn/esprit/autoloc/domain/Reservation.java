@@ -18,5 +18,12 @@ public class Reservation {
     @Enumerated(EnumType.STRING)
     StatutReservation statutReservation;
 
+    //les relation
+
+    @OneToOne(mappedBy = "reservation")
+        Contrat contrat;
+
+
+
 
 }
