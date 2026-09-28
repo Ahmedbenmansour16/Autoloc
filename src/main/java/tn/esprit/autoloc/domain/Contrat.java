@@ -1,14 +1,14 @@
 package tn.esprit.autoloc.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -20,5 +20,11 @@ public class Contrat {
     LocalDate dateSigniature;
     BigDecimal montantTotal;
      boolean valide;
+
+     //les relation
+    @OneToOne
+    Reservation reservation;
+    @OneToMany(mappedBy = "contrat",cascade = CascadeType.ALL)
+    List<Paiement> paiements = new ArrayList<>();
 
 }

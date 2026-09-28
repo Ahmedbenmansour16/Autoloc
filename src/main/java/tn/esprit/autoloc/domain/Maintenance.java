@@ -1,9 +1,6 @@
 package tn.esprit.autoloc.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
@@ -19,4 +16,8 @@ public class Maintenance {
     LocalDate dateDebut;
     LocalDate dateFin;
     String description;
+
+    //les relation
+    @ManyToOne
+    Vehicule vehicule;
 }
