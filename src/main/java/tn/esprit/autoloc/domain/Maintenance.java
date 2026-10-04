@@ -20,4 +20,6 @@ public class Maintenance {
     //les relation
     @ManyToOne
     Vehicule vehicule;
+    
+
 }
