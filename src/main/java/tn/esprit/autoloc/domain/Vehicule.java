@@ -26,4 +26,13 @@ public class Vehicule {
     //les relation
     @ManyToMany(fetch = FetchType.EAGER)
     List<Equipement> equipements = new ArrayList<>();
+
+    @OneToMany(fetch = FetchType.EAGER)
+    List<Maintenance> maintenances = new ArrayList<>();
+
+    @OneToMany(fetch = FetchType.EAGER)
+    List<Reservation> reservations = new ArrayList<>();
+
+    @ManyToOne
+    Agence agence;
 }

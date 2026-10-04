@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,5 +19,8 @@ public class Employe {
     String prenom;
     @Enumerated(EnumType.STRING)
     RoleEmploye role;
+
+    @ManyToOne
+        Agence agence;
 
 }

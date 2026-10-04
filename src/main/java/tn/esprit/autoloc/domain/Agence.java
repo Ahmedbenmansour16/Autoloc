@@ -1,11 +1,11 @@
 package tn.esprit.autoloc.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @AllArgsConstructor
@@ -19,4 +19,10 @@ public class Agence {
     String ville;
     String adresse;
     String telephone;
+// les relation
+    @OneToMany(fetch = FetchType.EAGER)
+    List<Employe> employes = new ArrayList<>();
+
+    @OneToMany(fetch = FetchType.EAGER)
+    List<Vehicule> vehicules = new ArrayList<>();
 }
