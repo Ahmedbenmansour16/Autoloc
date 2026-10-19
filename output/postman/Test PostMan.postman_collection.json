@@ -1,0 +1,1455 @@
+{
+  "info": {
+    "name": "Test PostMan - Autoloc CRUD",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Tests CRUD locaux des 9 entites. Enregistrements independants crees par le test; suppression limitee aux identifiants renvoyes par les POST de cette execution. Les associations ne sont pas testees."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "Agence",
+      "item": [
+        {
+          "name": "Agence - Creation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/agences/ajouterAgence",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"TestPostman Agence\",\n  \"ville\": \"Tunis\",\n  \"adresse\": \"10 rue du Test\",\n  \"telephone\": \"22000001\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.unset(\"testAgenceId\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "pm.test(\"Identifiant genere\", function () { pm.expect(data.idAgence).to.be.a(\"number\").above(0); });",
+                  "if (pm.response.code === 200 && data.idAgence) pm.collectionVariables.set(\"testAgenceId\", data.idAgence);",
+                  "pm.test(\"Valeur creee\", function () { pm.expect(data.ville).to.eql(\"Tunis\"); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Agence\", operation: \"Creation\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Agence - Liste",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/agences/afficherToutesAgences"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Liste contenant la creation\", function () { const data = pm.response.json(); pm.expect(data).to.be.an(\"array\"); pm.expect(data.some(x => String(x.idAgence) === String(pm.collectionVariables.get(\"testAgenceId\")))).to.eql(true); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Agence\", operation: \"Liste\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Agence - Lecture",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/agences/afficherAgence/{{testAgenceId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Identifiant lu\", function () { pm.expect(String(pm.response.json().idAgence)).to.eql(String(pm.collectionVariables.get(\"testAgenceId\"))); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Agence\", operation: \"Lecture\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Agence - Modification",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/agences",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"TestPostman Agence\",\n  \"ville\": \"Sousse\",\n  \"adresse\": \"10 rue du Test\",\n  \"telephone\": \"22000001\",\n  \"idAgence\": \"{{testAgenceId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valeur modifiee\", function () { pm.expect(pm.response.json().ville).to.eql(\"Sousse\"); });",
+                  "pm.test(\"Identifiant conserve\", function () { pm.expect(String(pm.response.json().idAgence)).to.eql(String(pm.collectionVariables.get(\"testAgenceId\"))); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Agence\", operation: \"Modification\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Agence - Suppression",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/agences/supprimerAgence/{{testAgenceId}}"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"testAgenceId\")) throw new Error(\"Identifiant de test absent: suppression interdite\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Reponse vide\", function () { pm.expect(pm.response.text()).to.eql(\"\"); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Agence\", operation: \"Suppression\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Client",
+      "item": [
+        {
+          "name": "Client - Creation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/clients/ajouterClient",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"TestPostman\",\n  \"prenom\": \"Client\",\n  \"email\": \"testpostman@example.com\",\n  \"telephone\": \"22000002\",\n  \"numPermis\": \"TEST1019130956\",\n  \"dateInscription\": \"2026-10-19\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.unset(\"testClientId\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "pm.test(\"Identifiant genere\", function () { pm.expect(data.idClient).to.be.a(\"number\").above(0); });",
+                  "if (pm.response.code === 200 && data.idClient) pm.collectionVariables.set(\"testClientId\", data.idClient);",
+                  "pm.test(\"Valeur creee\", function () { pm.expect(data.prenom).to.eql(\"Client\"); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Client\", operation: \"Creation\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Client - Liste",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/clients/afficherTousClients"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Liste contenant la creation\", function () { const data = pm.response.json(); pm.expect(data).to.be.an(\"array\"); pm.expect(data.some(x => String(x.idClient) === String(pm.collectionVariables.get(\"testClientId\")))).to.eql(true); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Client\", operation: \"Liste\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Client - Lecture",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/clients/afficherClient/{{testClientId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Identifiant lu\", function () { pm.expect(String(pm.response.json().idClient)).to.eql(String(pm.collectionVariables.get(\"testClientId\"))); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Client\", operation: \"Lecture\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Client - Modification",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/clients/modifierClient",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"TestPostman\",\n  \"prenom\": \"ClientModifie\",\n  \"email\": \"testpostman@example.com\",\n  \"telephone\": \"22000002\",\n  \"numPermis\": \"TEST1019130956\",\n  \"dateInscription\": \"2026-10-19\",\n  \"idClient\": \"{{testClientId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valeur modifiee\", function () { pm.expect(pm.response.json().prenom).to.eql(\"ClientModifie\"); });",
+                  "pm.test(\"Identifiant conserve\", function () { pm.expect(String(pm.response.json().idClient)).to.eql(String(pm.collectionVariables.get(\"testClientId\"))); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Client\", operation: \"Modification\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Client - Suppression",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/clients/supprimerClient/{{testClientId}}"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"testClientId\")) throw new Error(\"Identifiant de test absent: suppression interdite\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Reponse vide\", function () { pm.expect(pm.response.text()).to.eql(\"\"); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Client\", operation: \"Suppression\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Contrat",
+      "item": [
+        {
+          "name": "Contrat - Creation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/contrats/ajouterContrat",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dateSignature\": \"2026-10-19\",\n  \"montantTotal\": 250,\n  \"valide\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.unset(\"testContratId\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "pm.test(\"Identifiant genere\", function () { pm.expect(data.idContrat).to.be.a(\"number\").above(0); });",
+                  "if (pm.response.code === 200 && data.idContrat) pm.collectionVariables.set(\"testContratId\", data.idContrat);",
+                  "pm.test(\"Valeur creee\", function () { pm.expect(data.montantTotal).to.eql(250); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Contrat\", operation: \"Creation\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Contrat - Liste",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/contrats/afficherTousContrats"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Liste contenant la creation\", function () { const data = pm.response.json(); pm.expect(data).to.be.an(\"array\"); pm.expect(data.some(x => String(x.idContrat) === String(pm.collectionVariables.get(\"testContratId\")))).to.eql(true); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Contrat\", operation: \"Liste\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Contrat - Lecture",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/contrats/afficherContrat/{{testContratId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Identifiant lu\", function () { pm.expect(String(pm.response.json().idContrat)).to.eql(String(pm.collectionVariables.get(\"testContratId\"))); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Contrat\", operation: \"Lecture\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Contrat - Modification",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/contrats/modifierContrat",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dateSignature\": \"2026-10-19\",\n  \"montantTotal\": 300,\n  \"valide\": true,\n  \"idContrat\": \"{{testContratId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valeur modifiee\", function () { pm.expect(pm.response.json().montantTotal).to.eql(300); });",
+                  "pm.test(\"Identifiant conserve\", function () { pm.expect(String(pm.response.json().idContrat)).to.eql(String(pm.collectionVariables.get(\"testContratId\"))); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Contrat\", operation: \"Modification\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Contrat - Suppression",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/contrats/supprimerContrat/{{testContratId}}"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"testContratId\")) throw new Error(\"Identifiant de test absent: suppression interdite\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Reponse vide\", function () { pm.expect(pm.response.text()).to.eql(\"\"); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Contrat\", operation: \"Suppression\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Employe",
+      "item": [
+        {
+          "name": "Employe - Creation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/employes/ajouterEmploye",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"TestPostman\",\n  \"prenom\": \"Employe\",\n  \"role\": \"AGENT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.unset(\"testEmployeId\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "pm.test(\"Identifiant genere\", function () { pm.expect(data.idEmploye).to.be.a(\"number\").above(0); });",
+                  "if (pm.response.code === 200 && data.idEmploye) pm.collectionVariables.set(\"testEmployeId\", data.idEmploye);",
+                  "pm.test(\"Valeur creee\", function () { pm.expect(data.role).to.eql(\"AGENT\"); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Employe\", operation: \"Creation\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Employe - Liste",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/employes/afficherTousEmployes"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Liste contenant la creation\", function () { const data = pm.response.json(); pm.expect(data).to.be.an(\"array\"); pm.expect(data.some(x => String(x.idEmploye) === String(pm.collectionVariables.get(\"testEmployeId\")))).to.eql(true); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Employe\", operation: \"Liste\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Employe - Lecture",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/employes/afficherEmploye/{{testEmployeId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Identifiant lu\", function () { pm.expect(String(pm.response.json().idEmploye)).to.eql(String(pm.collectionVariables.get(\"testEmployeId\"))); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Employe\", operation: \"Lecture\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Employe - Modification",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/employes/modifierEmploye",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nom\": \"TestPostman\",\n  \"prenom\": \"Employe\",\n  \"role\": \"MANAGER\",\n  \"idEmploye\": \"{{testEmployeId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valeur modifiee\", function () { pm.expect(pm.response.json().role).to.eql(\"MANAGER\"); });",
+                  "pm.test(\"Identifiant conserve\", function () { pm.expect(String(pm.response.json().idEmploye)).to.eql(String(pm.collectionVariables.get(\"testEmployeId\"))); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Employe\", operation: \"Modification\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Employe - Suppression",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/employes/supprimerEmploye/{{testEmployeId}}"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"testEmployeId\")) throw new Error(\"Identifiant de test absent: suppression interdite\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Reponse vide\", function () { pm.expect(pm.response.text()).to.eql(\"\"); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Employe\", operation: \"Suppression\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Equipement",
+      "item": [
+        {
+          "name": "Equipement - Creation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/equipements/ajouterEquipement",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"libelle\": \"TestPostman GPS\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.unset(\"testEquipementId\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "pm.test(\"Identifiant genere\", function () { pm.expect(data.idEquipement).to.be.a(\"number\").above(0); });",
+                  "if (pm.response.code === 200 && data.idEquipement) pm.collectionVariables.set(\"testEquipementId\", data.idEquipement);",
+                  "pm.test(\"Valeur creee\", function () { pm.expect(data.libelle).to.eql(\"TestPostman GPS\"); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Equipement\", operation: \"Creation\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Equipement - Liste",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/equipements/afficherTousEquipements"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Liste contenant la creation\", function () { const data = pm.response.json(); pm.expect(data).to.be.an(\"array\"); pm.expect(data.some(x => String(x.idEquipement) === String(pm.collectionVariables.get(\"testEquipementId\")))).to.eql(true); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Equipement\", operation: \"Liste\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Equipement - Lecture",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/equipements/afficherEquipement/{{testEquipementId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Identifiant lu\", function () { pm.expect(String(pm.response.json().idEquipement)).to.eql(String(pm.collectionVariables.get(\"testEquipementId\"))); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Equipement\", operation: \"Lecture\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Equipement - Modification",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/equipements/modifierEquipement",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"libelle\": \"TestPostman GPS modifie\",\n  \"idEquipement\": \"{{testEquipementId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valeur modifiee\", function () { pm.expect(pm.response.json().libelle).to.eql(\"TestPostman GPS modifie\"); });",
+                  "pm.test(\"Identifiant conserve\", function () { pm.expect(String(pm.response.json().idEquipement)).to.eql(String(pm.collectionVariables.get(\"testEquipementId\"))); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Equipement\", operation: \"Modification\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Equipement - Suppression",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/equipements/supprimerEquipement/{{testEquipementId}}"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"testEquipementId\")) throw new Error(\"Identifiant de test absent: suppression interdite\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Reponse vide\", function () { pm.expect(pm.response.text()).to.eql(\"\"); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Equipement\", operation: \"Suppression\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Maintenance",
+      "item": [
+        {
+          "name": "Maintenance - Creation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/maintenances/ajouterMaintenance",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dateDebut\": \"2026-10-19\",\n  \"dateFin\": \"2026-10-20\",\n  \"description\": \"TestPostman entretien\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.unset(\"testMaintenanceId\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "pm.test(\"Identifiant genere\", function () { pm.expect(data.idMaintenance).to.be.a(\"number\").above(0); });",
+                  "if (pm.response.code === 200 && data.idMaintenance) pm.collectionVariables.set(\"testMaintenanceId\", data.idMaintenance);",
+                  "pm.test(\"Valeur creee\", function () { pm.expect(data.description).to.eql(\"TestPostman entretien\"); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Maintenance\", operation: \"Creation\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Maintenance - Liste",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/maintenances/afficherToutesMaintenances"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Liste contenant la creation\", function () { const data = pm.response.json(); pm.expect(data).to.be.an(\"array\"); pm.expect(data.some(x => String(x.idMaintenance) === String(pm.collectionVariables.get(\"testMaintenanceId\")))).to.eql(true); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Maintenance\", operation: \"Liste\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Maintenance - Lecture",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/maintenances/afficherMaintenance/{{testMaintenanceId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Identifiant lu\", function () { pm.expect(String(pm.response.json().idMaintenance)).to.eql(String(pm.collectionVariables.get(\"testMaintenanceId\"))); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Maintenance\", operation: \"Lecture\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Maintenance - Modification",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/maintenances/modifierMaintenance",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dateDebut\": \"2026-10-19\",\n  \"dateFin\": \"2026-10-20\",\n  \"description\": \"TestPostman entretien modifie\",\n  \"idMaintenance\": \"{{testMaintenanceId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valeur modifiee\", function () { pm.expect(pm.response.json().description).to.eql(\"TestPostman entretien modifie\"); });",
+                  "pm.test(\"Identifiant conserve\", function () { pm.expect(String(pm.response.json().idMaintenance)).to.eql(String(pm.collectionVariables.get(\"testMaintenanceId\"))); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Maintenance\", operation: \"Modification\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Maintenance - Suppression",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/maintenances/supprimerMaintenance/{{testMaintenanceId}}"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"testMaintenanceId\")) throw new Error(\"Identifiant de test absent: suppression interdite\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Reponse vide\", function () { pm.expect(pm.response.text()).to.eql(\"\"); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Maintenance\", operation: \"Suppression\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Paiement",
+      "item": [
+        {
+          "name": "Paiement - Creation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/paiements/ajouterPaiement",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"montant\": 250,\n  \"datePaiement\": \"2026-10-19\",\n  \"modePaiement\": \"CARTE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.unset(\"testPaiementId\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "pm.test(\"Identifiant genere\", function () { pm.expect(data.idPaiement).to.be.a(\"number\").above(0); });",
+                  "if (pm.response.code === 200 && data.idPaiement) pm.collectionVariables.set(\"testPaiementId\", data.idPaiement);",
+                  "pm.test(\"Valeur creee\", function () { pm.expect(data.modePaiement).to.eql(\"CARTE\"); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Paiement\", operation: \"Creation\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Paiement - Liste",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/paiements/afficherTousPaiements"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Liste contenant la creation\", function () { const data = pm.response.json(); pm.expect(data).to.be.an(\"array\"); pm.expect(data.some(x => String(x.idPaiement) === String(pm.collectionVariables.get(\"testPaiementId\")))).to.eql(true); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Paiement\", operation: \"Liste\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Paiement - Lecture",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/paiements/afficherPaiement/{{testPaiementId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Identifiant lu\", function () { pm.expect(String(pm.response.json().idPaiement)).to.eql(String(pm.collectionVariables.get(\"testPaiementId\"))); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Paiement\", operation: \"Lecture\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Paiement - Modification",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/paiements/modifierPaiement",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"montant\": 250,\n  \"datePaiement\": \"2026-10-19\",\n  \"modePaiement\": \"VIREMENT\",\n  \"idPaiement\": \"{{testPaiementId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valeur modifiee\", function () { pm.expect(pm.response.json().modePaiement).to.eql(\"VIREMENT\"); });",
+                  "pm.test(\"Identifiant conserve\", function () { pm.expect(String(pm.response.json().idPaiement)).to.eql(String(pm.collectionVariables.get(\"testPaiementId\"))); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Paiement\", operation: \"Modification\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Paiement - Suppression",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/paiements/supprimerPaiement/{{testPaiementId}}"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"testPaiementId\")) throw new Error(\"Identifiant de test absent: suppression interdite\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Reponse vide\", function () { pm.expect(pm.response.text()).to.eql(\"\"); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Paiement\", operation: \"Suppression\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reservation",
+      "item": [
+        {
+          "name": "Reservation - Creation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/reservations/ajouterReservation",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dateDebut\": \"2026-10-20\",\n  \"dateFin\": \"2026-10-22\",\n  \"statut\": \"EN_ATTENTE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.unset(\"testReservationId\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "pm.test(\"Identifiant genere\", function () { pm.expect(data.idReservation).to.be.a(\"number\").above(0); });",
+                  "if (pm.response.code === 200 && data.idReservation) pm.collectionVariables.set(\"testReservationId\", data.idReservation);",
+                  "pm.test(\"Valeur creee\", function () { pm.expect(data.statut).to.eql(\"EN_ATTENTE\"); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Reservation\", operation: \"Creation\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation - Liste",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/reservations/afficherToutesReservations"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Liste contenant la creation\", function () { const data = pm.response.json(); pm.expect(data).to.be.an(\"array\"); pm.expect(data.some(x => String(x.idReservation) === String(pm.collectionVariables.get(\"testReservationId\")))).to.eql(true); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Reservation\", operation: \"Liste\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation - Lecture",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/reservations/afficherReservation/{{testReservationId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Identifiant lu\", function () { pm.expect(String(pm.response.json().idReservation)).to.eql(String(pm.collectionVariables.get(\"testReservationId\"))); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Reservation\", operation: \"Lecture\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation - Modification",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/reservations/modifierReservation",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dateDebut\": \"2026-10-20\",\n  \"dateFin\": \"2026-10-22\",\n  \"statut\": \"CONFIRMEE\",\n  \"idReservation\": \"{{testReservationId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valeur modifiee\", function () { pm.expect(pm.response.json().statut).to.eql(\"CONFIRMEE\"); });",
+                  "pm.test(\"Identifiant conserve\", function () { pm.expect(String(pm.response.json().idReservation)).to.eql(String(pm.collectionVariables.get(\"testReservationId\"))); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Reservation\", operation: \"Modification\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reservation - Suppression",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/reservations/supprimerReservation/{{testReservationId}}"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"testReservationId\")) throw new Error(\"Identifiant de test absent: suppression interdite\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Reponse vide\", function () { pm.expect(pm.response.text()).to.eql(\"\"); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Reservation\", operation: \"Suppression\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Vehicule",
+      "item": [
+        {
+          "name": "Vehicule - Creation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/vehicules/ajouterVehicule",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"immatriculation\": \"TP-1019130956\",\n  \"marque\": \"TestPostman\",\n  \"modele\": \"Clio\",\n  \"categorie\": \"CITADINE\",\n  \"tarifJournalier\": 80,\n  \"statut\": \"DISPONIBLE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.unset(\"testVehiculeId\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const data = pm.response.json();",
+                  "pm.test(\"Identifiant genere\", function () { pm.expect(data.idVehicule).to.be.a(\"number\").above(0); });",
+                  "if (pm.response.code === 200 && data.idVehicule) pm.collectionVariables.set(\"testVehiculeId\", data.idVehicule);",
+                  "pm.test(\"Valeur creee\", function () { pm.expect(data.tarifJournalier).to.eql(80); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Vehicule\", operation: \"Creation\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Vehicule - Liste",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/vehicules/afficherToutesVehicules"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Liste contenant la creation\", function () { const data = pm.response.json(); pm.expect(data).to.be.an(\"array\"); pm.expect(data.some(x => String(x.idVehicule) === String(pm.collectionVariables.get(\"testVehiculeId\")))).to.eql(true); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Vehicule\", operation: \"Liste\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Vehicule - Lecture",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/vehicules/afficherVehicule/{{testVehiculeId}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Identifiant lu\", function () { pm.expect(String(pm.response.json().idVehicule)).to.eql(String(pm.collectionVariables.get(\"testVehiculeId\"))); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Vehicule\", operation: \"Lecture\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Vehicule - Modification",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/vehicules/modifierVehicule",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"immatriculation\": \"TP-1019130956\",\n  \"marque\": \"TestPostman\",\n  \"modele\": \"Clio\",\n  \"categorie\": \"CITADINE\",\n  \"tarifJournalier\": 95,\n  \"statut\": \"DISPONIBLE\",\n  \"idVehicule\": \"{{testVehiculeId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Valeur modifiee\", function () { pm.expect(pm.response.json().tarifJournalier).to.eql(95); });",
+                  "pm.test(\"Identifiant conserve\", function () { pm.expect(String(pm.response.json().idVehicule)).to.eql(String(pm.collectionVariables.get(\"testVehiculeId\"))); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Vehicule\", operation: \"Modification\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Vehicule - Suppression",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/vehicules/supprimerVehicule/{{testVehiculeId}}"
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"testVehiculeId\")) throw new Error(\"Identifiant de test absent: suppression interdite\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"Reponse vide\", function () { pm.expect(pm.response.text()).to.eql(\"\"); });",
+                  "console.log(\"AUT0LOC_RESULT \" + JSON.stringify({entity: \"Vehicule\", operation: \"Suppression\", method: pm.request.method, url: pm.request.url.toString(), status: pm.response.code, response: pm.response.text()}));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
